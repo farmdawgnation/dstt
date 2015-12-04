@@ -47,7 +47,7 @@
   (let [request-indicies (range number-of-requests)
         request-delays (map #(* % pause-between-requests) request-indicies)
         request-futures (map #(issue-timed-request request-invoker % handler) request-delays)
-        result-timings (map #(deref %) request-futures)
+        result-timings (doall (map deref (doall request-futures)))
         grouped-result-categories (partition (count result-timings) (apply interleave result-timings))
         average-timing-per-category (map #(-> % (average) (str "ms")) grouped-result-categories)]
     (println (str "Average time per category:\n" (vec average-timing-per-category)))))
