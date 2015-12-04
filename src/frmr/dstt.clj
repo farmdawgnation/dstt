@@ -1,4 +1,4 @@
-(ns frmr.proper-tester
+(ns frmr.dstt
   (:import [java.io PushbackReader])
   (:require [clj-http.client :as client]
             [clojure.tools.cli :refer [parse-opts]]
