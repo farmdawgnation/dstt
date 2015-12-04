@@ -50,6 +50,12 @@
         average-timing-per-category (map #(-> % (average) (str "ms")) grouped-result-categories)]
     (println (str "Average time per category:\n" (vec average-timing-per-category)))))
 
+(defn- parse-header
+  "Parse a header string from the command line into a map for the http library."
+  [header]
+  (let [[header-name header-value] (split header #": ")]
+    {header-name header-value}))
+
 (def cli-options
   [["-r" "--requests REQUESTS" "Number of requests"
     :id :requests
@@ -70,7 +76,10 @@
     :id :body]
 
    [nil "--header HEADER" "HTTP header to set"
-    :id :header]
+    :id :headers
+    :default {}
+    :parse-fn parse-header
+    :assoc-fn (fn [map key value] (update-in map [key] #(conj % value)))]
 
    [nil "--handler HANDLER" "Custom handler file."
     :id :handler
@@ -88,12 +97,6 @@
 
     :else
     client/get))
-
-(defn- parse-header
-  "Parse a header string from the command line into a map for the http library."
-  [header]
-  (let [[header-name header-value] (split header #": ")]
-    {:headers {header-name header-value}}))
 
 (defn- parse-body
   "Parse a body string from the command line into a map for the http library."
@@ -123,7 +126,7 @@
              seconds :time
              handler :handler
              http-method :method
-             http-header :header
+             http-headers :headers
              http-body :body
              verbose :verbose} (:options parsed-options)
             [url] (:arguments parsed-options)
@@ -131,7 +134,7 @@
             pause-between-requests (/ milliseconds requests)
 
             client-request-method (select-function-for-http-method http-method)
-            request-options (merge (some-> http-header parse-header)
+            request-options (merge {:headers http-headers}
                                    (some-> http-body parse-body)
                                    {:follow-redirects false})
             request-invoker (fn [] (client-request-method url request-options))
