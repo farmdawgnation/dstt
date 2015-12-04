@@ -25,12 +25,13 @@
   `handler` to get a vector of timing results - where each member of the vector represents one
   category timing."
   [request-invoker pause handler]
-  (future (let [slept (Thread/sleep pause)
-                start (System/nanoTime)
-                response (request-invoker)
-                stop (System/nanoTime)
-                elapsed-time-in-ms (int (/ (- stop start) 1000000))]
-            (handler elapsed-time-in-ms (:body response)))))
+  (future
+    (Thread/sleep pause)
+    (let [start (System/nanoTime)
+          response (request-invoker)
+          stop (System/nanoTime)
+          elapsed-time-in-ms (int (/ (- stop start) 1000000))]
+      (handler elapsed-time-in-ms (:body response)))))
 
 (defn- load-test-url
   "Execute number-of-requests requests using the request-invoker with a pause-between-requests pause between
