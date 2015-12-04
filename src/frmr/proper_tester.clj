@@ -1,7 +1,9 @@
 (ns frmr.proper-tester
   (:import [java.io PushbackReader])
   (:require [clj-http.client :as client]
-            [clojure.java.io :as io]))
+            [clojure.tools.cli :refer [parse-opts]]
+            [clojure.java.io :as io])
+  (:gen-class))
 
 (defn- basic-handler
   "This is the default handler function that will just return a single category: the time taken to
@@ -46,25 +48,68 @@
         average-timing-per-category (map #(-> % (average) (str "ms")) grouped-result-categories)]
     (println (str "Average time per category:\n" (vec average-timing-per-category)))))
 
+(def cli-options
+  [["-r" "--requests REQUESTS" "Number of requests"
+    :id :requests
+    :parse-fn #(Integer/parseInt %)
+    :missing "Number of requests (-r) is required."]
+
+   ["-t" "--time TIME" "Time in seconds"
+    :id :time
+    :parse-fn #(Integer/parseInt %)
+    :missing "Time in seconds (-t) is required."]
+
+   [nil "--method METHOD" "HTTP method."
+    :id :method
+    :default "GET"
+    :validate-fn #(some #{%} ["GET" "POST"])]
+
+   [nil "--body BODY" "HTTP post body."
+    :id :body]
+
+   [nil "--header HEADER" "HTTP header to set"
+    :id :header]
+
+   [nil "--handler HANDLER" "Custom handler file."
+    :id :handler
+    :default nil]
+
+   ;; A boolean option defaulting to nil
+   ["-h" "--help"]])
+
 (defn -main
   "Main entry point.
   
   Takes in the URL that you want to test against, the number of seconds that you want to run that
   test, the number of requests to make over that time frame, and the handler to produce a vector
   of results to be averaged."
-  ([url seconds requests] (-main url seconds requests basic-handler))
 
-  ([url seconds requests handler]
-   (let [milliseconds (* (Integer. seconds) 1000)
-         pause-between-requests (/ milliseconds (Integer. requests))
-         [parsed-handler custom-handler-name] (if (string? handler)
-                                                [(eval (read (PushbackReader. (io/reader handler))))
-                                                 handler]
-                                                [handler
-                                                 nil])]
-     (println (str "Running a load test of " url))
-     (println (str requests " requests spread over " seconds " seconds."))
-     (if custom-handler-name (println (str "Using custom handler: " custom-handler-name)))
-     (println "")
-     (load-test-url url (Integer. requests) pause-between-requests parsed-handler)
-     (System/exit 0))))
+  [& args]
+  (let [parsed-options (parse-opts args cli-options)]
+    (cond
+      (some-> parsed-options :options :help)
+      (do (println (:summary parsed-options))
+          (System/exit 0))
+
+      (:errors parsed-options)
+      (do (mapv #(println (str "ERROR " %)) (:errors parsed-options))
+          (System/exit 1))
+
+      :else
+      (let [{requests :requests
+             seconds :time
+             handler :handler} (:options parsed-options)
+            [url] (:arguments parsed-options)
+            milliseconds (* seconds 1000)
+            pause-between-requests (/ milliseconds requests)
+            [parsed-handler custom-handler-name] (if-not (nil? handler)
+                                                   [(eval (read (PushbackReader. (io/reader handler))))
+                                                    handler]
+                                                   [basic-handler
+                                                    nil])]
+        (println (str "Running a load test of " url))
+        (println (str requests " requests spread over " seconds " seconds."))
+        (if custom-handler-name (println (str "Using custom handler: " custom-handler-name)))
+        (println "")
+        (load-test-url url requests pause-between-requests parsed-handler)
+        (System/exit 0)))))
