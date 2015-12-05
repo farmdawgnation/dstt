@@ -96,11 +96,13 @@
    [nil "--body BODY" "HTTP post body."
     :id :body]
 
-   [nil "--header HEADER" "HTTP header to set"
+   [nil "--header HEADER" "HTTP header to set, multiple possible."
     :id :headers
-    :default {}
     :parse-fn parse-header
-    :assoc-fn (fn [map key value] (update-in map [key] #(conj % value)))]
+    :assoc-fn (fn [map key value]
+                (update-in map
+                           [key]
+                           #(conj % value)))]
 
    [nil "--handler HANDLER" "Custom handler file."
     :id :handler
