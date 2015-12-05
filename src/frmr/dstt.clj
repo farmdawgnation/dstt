@@ -134,8 +134,11 @@
   [& args]
   (let [parsed-options (parse-opts args cli-options)]
     (cond
-      (some-> parsed-options :options :help)
-      (do (println (:summary parsed-options))
+      (or (some-> parsed-options :options :help)
+          (zero? (count (:arguments parsed-options))))
+      (do (println "DSTT – The Damn Simple Test Tool\n(c)2015 Matt Farmer - Licensed under the Apache2 License\n")
+          (println "Usage: dstt URL -r #REQUESTS -t SECONDS [other options]\n\nOption summary:")
+          (println (:summary parsed-options))
           (System/exit 0))
 
       (:errors parsed-options)
