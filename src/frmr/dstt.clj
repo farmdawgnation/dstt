@@ -47,10 +47,14 @@
   (let [request-indicies (range number-of-requests)
         request-delays (map #(* % pause-between-requests) request-indicies)
         request-futures (map #(issue-timed-request request-invoker % handler) request-delays)
-        result-timings (doall (map deref (doall request-futures)))
-        grouped-result-categories (partition (count result-timings) (apply interleave result-timings))
-        average-timing-per-category (map average grouped-result-categories)]
-    (println (str "Average time per category:\n" (vec average-timing-per-category)))))
+        results (doall (map deref (doall request-futures)))
+        grouped-result-categories (partition (count results) (apply interleave results))
+        average-per-category (mapv average grouped-result-categories)
+        min-per-category (mapv #(apply min %) grouped-result-categories)
+        max-per-category (mapv #(apply max %) grouped-result-categories)]
+    (println (str "Average: " average-per-category))
+    (println (str "Minimum: " min-per-category))
+    (println (str "Maximum: " max-per-category))))
 
 (defn- parse-header
   "Parse a header string from the command line into a map for the http library."
