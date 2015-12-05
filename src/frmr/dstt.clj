@@ -49,7 +49,7 @@
         request-futures (map #(issue-timed-request request-invoker % handler) request-delays)
         result-timings (doall (map deref (doall request-futures)))
         grouped-result-categories (partition (count result-timings) (apply interleave result-timings))
-        average-timing-per-category (map #(-> % (average) (str "ms")) grouped-result-categories)]
+        average-timing-per-category (map average grouped-result-categories)]
     (println (str "Average time per category:\n" (vec average-timing-per-category)))))
 
 (defn- parse-header
