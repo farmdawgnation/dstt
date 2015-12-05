@@ -1,0 +1,3 @@
+#!/bin/bash
+
+java -jar dstt-0.1.0-standalone.jar "$@"
