@@ -1,6 +1,6 @@
 # The Damn Simple Test Tool
 
-*"A nieve load tester for smart APIs.*
+*"A naive load tester for smart APIs."*
 
 Imagine a very simple scenario: you want to get a rough idea of how your API performs given a
 certain number of requests spread out over a certain amount of time. Enter DSTT, the Damn Simple
