@@ -50,7 +50,7 @@
   "Execute number-of-requests requests using the request-invoker with a pause-between-requests pause between
   them. This execution happens in futures so that if we're simulating a decent amount of load that
   load should be able to happen in parallel.
-  
+
   The handler provided should consume two arguments: the total time the request took and the content
   of the response. Using these two pieces of information it should generate a vector, where each
   member represents one timing category from the request. So, if you're querying a JSON API that
@@ -128,7 +128,7 @@
 
 (defn -main
   "Main entry point.
-  
+
   Takes in the URL that you want to test against, the number of seconds that you want to run that
   test, the number of requests to make over that time frame, and the handler to produce a vector
   of results to be averaged."
