@@ -10,10 +10,15 @@
 (def parse-body #'frmr.dstt/parse-body)
 (def load-test-url #'frmr.dstt/load-test-url)
 (def basic-handler #'frmr.dstt/basic-handler)
+(def standard-deviation #'frmr.dstt/standard-deviation)
 
 (deftest average-averages-correctly
   (is (= 2 (average [2 2 2])))
   (is (= 15 (average [5 10 30]))))
+
+(deftest standard-deviation-returns-zero-for-less-than-two-items
+  (is (= 0 (standard-deviation nil)))
+  (is (= 0 (standard-deviation [5]))))
 
 (deftest issue-timed-request-passes-body-to-handler
   (let [last-handler-string (atom "")

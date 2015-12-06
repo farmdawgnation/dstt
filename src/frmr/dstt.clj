@@ -23,14 +23,16 @@
   "Determine the standard deviation of a collection of numbers. Shamelessly adapted from:
   https://github.com/clojure-cookbook/clojure-cookbook/blob/master/01_primitive-data/1-20_simple-statistics.asciidoc#standard-deviation"
   [coll]
-  (let [avg (average coll)
-        squares (for [x coll]
-                  (let [x-avg (- x avg)]
-                    (* x-avg x-avg)))
-        total (count coll)]
-    (-> (/ (apply + squares)
-           (- total 1))
-        (Math/sqrt))))
+  (if (< (count coll) 2)
+    0
+    (let [avg (average coll)
+          squares (for [x coll]
+                    (let [x-avg (- x avg)]
+                      (* x-avg x-avg)))
+          total (count coll)]
+      (-> (/ (apply + squares)
+             (- total 1))
+          (Math/sqrt)))))
 
 (defn- issue-timed-request
   "Issue a timed request by invoking request-invoker within a future after sleeping the future for a
