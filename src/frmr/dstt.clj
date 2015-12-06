@@ -7,6 +7,7 @@
             [clojure.data.json :as json])
   (:gen-class))
 
+;;; Helper functions.
 (defn- basic-handler
   "This is the default handler function that will just return a single category: the time taken to
   run the entire request in ms. You should probably provide your own handler function, but if this
@@ -34,6 +35,7 @@
              (- total 1))
           (Math/sqrt)))))
 
+;;; Load testing implementation.
 (defn- issue-timed-request
   "Issue a timed request by invoking request-invoker within a future after sleeping the future for a
   specified amount of time. Then pass the elapsed time and the content of the request through the
@@ -90,6 +92,7 @@
   (let [client-request-method (select-function-for-http-method http-method)]
     (fn [] (client-request-method url request-options))))
 
+;;; CLI Functions
 (defn- parse-header
   "Parse a header string from the command line into a map for the http library."
   [header]
