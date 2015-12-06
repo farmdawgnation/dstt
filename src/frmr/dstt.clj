@@ -124,7 +124,7 @@
 
      ["-h" "--help"]
 
-     ["-v" "--verbose"]])  
+     ["-v" "--verbose"]])
 
 (defn -main
   "Main entry point.
