@@ -73,20 +73,28 @@
      "Maximums" max-per-category
      "StandardDeviations" stddev-per-category}))
 
+(defn- select-function-for-http-method
+ [http-method]
+ (cond
+   (= "POST" http-method)
+   client/post
+
+   :else
+   client/get))
+
+(defn- build-request-invoker
+  "Builds a request invoker function given the name of the HTTP function you want to invoke, the url
+  you want to execute requests against, and a map of options you want to provide to the underlying
+  HTTP library."
+  [http-method url request-options]
+  (let [client-request-method (select-function-for-http-method http-method)]
+    (fn [] (client-request-method url request-options))))
+
 (defn- parse-header
   "Parse a header string from the command line into a map for the http library."
   [header]
   (let [[header-name header-value] (split header #": ")]
     {header-name header-value}))
-
-(defn- select-function-for-http-method
-  [http-method]
-  (cond
-    (= "POST" http-method)
-    client/post
-
-    :else
-    client/get))
 
 (defn- parse-body
   "Parse a body string from the command line into a map for the http library."
@@ -161,11 +169,10 @@
             milliseconds (* seconds 1000)
             pause-between-requests (/ milliseconds requests)
 
-            client-request-method (select-function-for-http-method http-method)
             request-options (merge {:headers http-headers}
                                    (some-> http-body parse-body)
                                    {:follow-redirects false})
-            request-invoker (fn [] (client-request-method url request-options))
+            request-invoker (build-request-invoker http-method url request-options)
 
             [parsed-handler custom-handler-name] (if-not (nil? handler)
                                                    [(eval (read (PushbackReader. (io/reader handler))))
