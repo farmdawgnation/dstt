@@ -66,10 +66,10 @@
         min-per-category (mapv #(apply min %) grouped-result-categories)
         max-per-category (mapv #(apply max %) grouped-result-categories)
         stddev-per-category (mapv standard-deviation grouped-result-categories)]
-    (println (str "Average: " average-per-category))
-    (println (str "Minimum: " min-per-category))
-    (println (str "Maximum: " max-per-category))
-    (println (str "StdDevi: " stddev-per-category))))
+    {"Averages" average-per-category
+     "Minimums" min-per-category
+     "Maximums" max-per-category
+     "StandardDeviations" stddev-per-category}))
 
 (defn- parse-header
   "Parse a header string from the command line into a map for the http library."
@@ -175,5 +175,12 @@
         (if verbose (println (str "Request options: " request-options)))
         (if custom-handler-name (println (str "Using custom handler: " custom-handler-name)))
         (println "")
-        (load-test-url request-invoker requests pause-between-requests parsed-handler)
-        (System/exit 0)))))
+        (let [load-test-results (load-test-url request-invoker
+                                               requests
+                                               pause-between-requests
+                                               parsed-handler)]
+          (println (str "Average: " (get load-test-results "Averages")))
+          (println (str "Minimum: " (get load-test-results "Minimums")))
+          (println (str "Maximum: " (get load-test-results "Maximums")))
+          (println (str "StdDevi: " (get load-test-results "StandardDeviations")))
+        (System/exit 0))))))
