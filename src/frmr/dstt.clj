@@ -77,41 +77,6 @@
   (let [[header-name header-value] (split header #": ")]
     {header-name header-value}))
 
-(def cli-options
-  [["-r" "--requests REQUESTS" "Number of requests"
-    :id :requests
-    :parse-fn #(Integer/parseInt %)
-    :missing "Number of requests (-r) is required."]
-
-   ["-t" "--time TIME" "Time in seconds"
-    :id :time
-    :parse-fn #(Integer/parseInt %)
-    :missing "Time in seconds (-t) is required."]
-
-   [nil "--method METHOD" "HTTP method."
-    :id :method
-    :default "GET"
-    :validate-fn #(some #{%} ["GET" "POST"])]
-
-   [nil "--body BODY" "HTTP post body."
-    :id :body]
-
-   [nil "--header HEADER" "HTTP header to set, multiple possible."
-    :id :headers
-    :parse-fn parse-header
-    :assoc-fn (fn [map key value]
-                (update-in map
-                           [key]
-                           #(conj % value)))]
-
-   [nil "--handler HANDLER" "Custom handler file."
-    :id :handler
-    :default nil]
-
-   ["-h" "--help"]
-
-   ["-v" "--verbose"]])
-
 (defn- select-function-for-http-method
   [http-method]
   (cond
@@ -125,6 +90,41 @@
   "Parse a body string from the command line into a map for the http library."
   [body]
   {:body body})
+
+  (def cli-options
+    [["-r" "--requests REQUESTS" "Number of requests"
+      :id :requests
+      :parse-fn #(Integer/parseInt %)
+      :missing "Number of requests (-r) is required."]
+
+     ["-t" "--time TIME" "Time in seconds"
+      :id :time
+      :parse-fn #(Integer/parseInt %)
+      :missing "Time in seconds (-t) is required."]
+
+     [nil "--method METHOD" "HTTP method."
+      :id :method
+      :default "GET"
+      :validate-fn #(some #{%} ["GET" "POST"])]
+
+     [nil "--body BODY" "HTTP post body."
+      :id :body]
+
+     [nil "--header HEADER" "HTTP header to set, multiple possible."
+      :id :headers
+      :parse-fn parse-header
+      :assoc-fn (fn [map key value]
+                  (update-in map
+                             [key]
+                             #(conj % value)))]
+
+     [nil "--handler HANDLER" "Custom handler file."
+      :id :handler
+      :default nil]
+
+     ["-h" "--help"]
+
+     ["-v" "--verbose"]])  
 
 (defn -main
   "Main entry point.
