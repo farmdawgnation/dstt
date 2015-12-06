@@ -92,6 +92,16 @@
   (let [client-request-method (select-function-for-http-method http-method)]
     (fn [] (client-request-method url request-options))))
 
+;;; API Functions
+
+(defn run-load-test
+  "Execute a load test against a specified URL by issuing the number-of-requests spread over the
+  number-of-milliseconds using the http-method, request-options, and result-handler specified."
+  [url http-method number-of-requests number-of-milliseconds request-options result-handler]
+  (let [request-invoker (build-request-invoker http-method url request-options)
+        pause-between-requests (/ number-of-requests number-of-milliseconds)]
+    (load-test-url request-invoker number-of-requests pause-between-requests result-handler)))
+
 ;;; CLI Functions
 (defn- parse-header
   "Parse a header string from the command line into a map for the http library."
