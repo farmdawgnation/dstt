@@ -135,6 +135,7 @@
 
    [nil "--header HEADER" "HTTP header to set, multiple possible."
     :id :headers
+    :default {}
     :parse-fn parse-header
     :assoc-fn (fn [map key value]
                 (update-in map
