@@ -3,7 +3,7 @@
   (:require [clj-http.client :as client]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.java.io :as io]
-            [clojure.string :refer [split]]
+            [clojure.string :refer [join split]]
             [clojure.data.json :as json])
   (:gen-class))
 
@@ -73,7 +73,8 @@
     {"Averages" average-per-category
      "Minimums" min-per-category
      "Maximums" max-per-category
-     "StandardDeviations" stddev-per-category}))
+     "StandardDeviations" stddev-per-category
+     "RawResults" results}))
 
 (defn- select-function-for-http-method
  [http-method]
@@ -148,6 +149,9 @@
 
    ["-h" "--help"]
 
+   [nil "--csv FILE" "Spit out a CSV file with raw timings."
+    :id :csv]
+
    ["-v" "--verbose"]])
 
 (defn -main
@@ -178,7 +182,8 @@
              http-method :method
              http-headers :headers
              http-body :body
-             verbose :verbose} (:options parsed-options)
+             verbose :verbose
+             csv :csv} (:options parsed-options)
             [url] (:arguments parsed-options)
             milliseconds (* seconds 1000)
             pause-between-requests (/ milliseconds requests)
@@ -202,6 +207,13 @@
                                                requests
                                                pause-between-requests
                                                parsed-handler)]
+          (if csv
+            (with-open [csv-writer (io/writer csv)]
+              (let [raw-results (get load-test-results "RawResults")
+                    lines (map #(join "," %) raw-results)
+                    content (join "\n" lines)]
+                (println (str "Writing CSV " csv))
+                (.write csv-writer content))))
           (println (str "Average: " (get load-test-results "Averages")))
           (println (str "Minimum: " (get load-test-results "Minimums")))
           (println (str "Maximum: " (get load-test-results "Maximums")))
