@@ -215,7 +215,7 @@
                                                parsed-handler)]
           (if csv
             (with-open [csv-writer (io/writer csv)]
-              (.write csv-writer (str "Load test: " url " Requests: " requests " Seconds: " seconds))
+              (.write csv-writer (str "Load test: " url " Requests: " requests " Seconds: " seconds "\n"))
               (let [raw-results (get load-test-results "RawResults")
                     lines (map #(join "," %) raw-results)
                     content (join "\n" lines)]
