@@ -35,6 +35,12 @@
              (- total 1))
           (Math/sqrt)))))
 
+(defn- apply-to-numbers
+  "Apply fn to maybe-numbers if the first entry in maybe-numbers is a number."
+  [maybe-numbers fn]
+  (if (-> maybe-numbers first number?)
+    (fn maybe-numbers)))
+
 ;;; Load testing implementation.
 (defn- issue-timed-request
   "Issue a timed request by invoking request-invoker within a future after sleeping the future for a
@@ -66,10 +72,10 @@
         request-futures (map #(issue-timed-request request-invoker % handler) request-delays)
         results (doall (map deref (doall request-futures)))
         grouped-result-categories (partition (count results) (apply interleave results))
-        average-per-category (mapv average grouped-result-categories)
-        min-per-category (mapv #(apply min %) grouped-result-categories)
-        max-per-category (mapv #(apply max %) grouped-result-categories)
-        stddev-per-category (mapv standard-deviation grouped-result-categories)]
+        average-per-category (mapv #(apply-to-numbers % average) grouped-result-categories)
+        min-per-category (mapv #(apply-to-numbers % (fn [x] (apply min x))) grouped-result-categories)
+        max-per-category (mapv #(apply-to-numbers % (fn [x] (apply max x))) grouped-result-categories)
+        stddev-per-category (mapv #(apply-to-numbers % standard-deviation) grouped-result-categories)]
     {"Averages" average-per-category
      "Minimums" min-per-category
      "Maximums" max-per-category
