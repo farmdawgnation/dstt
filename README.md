@@ -8,6 +8,18 @@ Imagine a very simple scenario: you want to get a rough idea of how your API per
 certain number of requests spread out over a certain amount of time. Enter DSTT, the Damn Simple
 Test Tool.
 
+## Getting DSTT
+
+To get the CLI version of DSTT, pop over to the [releases page](https://github.com/farmdawgnation/dstt/releases)
+and download a copy.
+
+Or, if you're interested in using DSTT in your project (say, in an automated test) just include a
+reference to the dependency in your project.clj:
+
+```
+[me.frmr.tools/dstt "0.2.0"]
+```
+
 ## Introduction
 
 DSTT is a command line utility that will make a certain number of requests to a URL and spread them
@@ -19,26 +31,71 @@ $ dstt http://google.com -r 10 -t 30
 Running a load test of http://google.com
 10 requests spread over 30 seconds.
 
-Average time per category:
-["137ms"]
+Average: [111]
+Minimum: [91]
+Maximum: [255]
+StdDevi: [50.81885039584776]
 ```
+
+The above gives you information about the total time it took to complete 10 GET requests to Google
+over 30 seconds.
+
+### Result Handlers and Timing Categories
 
 However, that's a bit boring. The Apache Benchmarker lets you do that (and probably does a much
 better job of it). DSTT's real value add is the ability to attach custom **result handlers** to
-collect other timing information too. Result handlers are simply Clojure files that define a
-function of the form:
+collect other timing information too.
+
+DSTT is based on the concept of timing categories. Result handlers are Clojure functions that
+take in a result and the total time of the request, and return a vector of the timing categories
+that you're interested in.
+
+They look somewhat like:
 
 ```clojure
 (fn [total-time-in-ms response-body]
   ; Produce a vector of relevant times from this request.
-  [total-time-in-ms something-else-you-computed ...])
+  [total-time-in-ms category-two category-three ...])
 ```
 
-Store this in a file and pass the filename in using `--handler` to use that result handler instead
-of the boring, default one that just averages request completion times.
+So, you could, for example:
 
-## Getting DSTT
+* Pull timing information from a JSON API response and pair that with the timing information
+  for the overall request.
+* Determine the length of the entire request body and return that as a category.
+* Return arbitrary data - such as a new `java.util.Date` representing the time the request was
+  completed.
 
-To get DSTT, pop over to the [releases page](https://github.com/farmdawgnation/dstt/releases) and
-download a copy. Or, if you want to build it yourself you can clone this repository and build it
-using [Leiningen](http://leiningen.org).
+Store your code in a clojure and pass that to DSTT like so:
+
+```
+$ dstt http://google.com -r 10 -t 30 --handler my_handler.clj
+```
+
+Result categories can be of any type, but only categories that are numeric will get the nice
+average/minimum/maximum/stddev output in the summary.
+
+There are a few example handlers in the [samples folder](https://github.com/farmdawgnation/dstt/tree/master/samples).
+
+### Raw CSV Output
+
+DSTT will also let you spit out a raw CSV that contains the individual timing information for each
+request in the test, complete with all of your categories. You can do that using the csv option:
+
+```
+$ dstt http://google.com -r 10 -t 30 --csv google.csv
+```
+
+## Use DSTT Programatically
+
+If you're interested in using DSTT programatically, you can do that. `frmr.dstt` exposes a
+public function named `run-load-test` that can be invoked like so:
+
+```clojure
+(run-load-test "http://google.com"
+               "GET"
+               10
+               3000 # Note this takes milliseconds, not seconds
+               {}   # Request options like headers, cookies, etc. See clj-http docs.
+               result-handler)
+```
