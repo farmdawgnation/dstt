@@ -16,7 +16,7 @@ and download a copy.
 Or, if you're interested in using DSTT in your project (say, in an automated test) just include a
 reference to the dependency in your project.clj:
 
-```
+```clojure
 [me.frmr.tools/dstt "0.2.0"]
 ```
 
@@ -99,3 +99,8 @@ public function named `run-load-test` that can be invoked like so:
                {}   # Request options like headers, cookies, etc. See clj-http docs.
                result-handler)
 ```
+
+## About the Author
+
+Matt Farmer is a Senior Software Engineer with [Domino Data Lab](http://dominodatalab.com) changing
+how data science is done for the better.
