@@ -9,12 +9,7 @@
                  [org.clojure/data.json "0.2.6"]]
   :main frmr.dstt
   :aot [frmr.dstt]
-  :deploy-repositories [["releases" {:url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                                     :creds :gpg}
-                         "snapshots" {:url "https://oss.sonatype.org/content/repositories/snapshots/"
-                                      :creds :gpg}]]
 
-  ; Required by Maven Central for publishing.
   :scm {:url "git@github.com:farmdawgnation/dstt.git"}
   :pom-addition [:developers [:developer
                               [:name "Matt Farmer"]
