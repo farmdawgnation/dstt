@@ -1,5 +1,7 @@
 # The Damn Simple Test Tool
 
+[![Build Status](https://travis-ci.org/farmdawgnation/dstt.svg?branch=master)](https://travis-ci.org/farmdawgnation/dstt)
+
 *"A naive load tester for smart APIs."*
 
 Imagine a very simple scenario: you want to get a rough idea of how your API performs given a
