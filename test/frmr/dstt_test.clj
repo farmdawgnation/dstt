@@ -61,6 +61,9 @@
     (is (= expected-header (parse-header input)))))
 
 (deftest select-function-for-http-method-makes-correct-selections
+  (is (= client/delete (select-function-for-http-method "DELETE")))
+  (is (= client/put (select-function-for-http-method "PUT")))
+  (is (= client/head (select-function-for-http-method "HEAD")))
   (is (= client/get (select-function-for-http-method "GET")))
   (is (= client/post (select-function-for-http-method "POST")))
   (is (= client/get (select-function-for-http-method "PATCH")))

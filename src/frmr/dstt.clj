@@ -85,6 +85,15 @@
 (defn- select-function-for-http-method
  [http-method]
  (cond
+   (= "DELETE" http-method)
+   client/delete
+
+   (= "PUT" http-method)
+   client/put
+
+   (= "HEAD" http-method)
+   client/head
+
    (= "POST" http-method)
    client/post
 
