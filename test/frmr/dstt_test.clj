@@ -20,13 +20,13 @@
   (is (= 0 (standard-deviation nil)))
   (is (= 0 (standard-deviation [5]))))
 
-(deftest issue-timed-request-passes-body-to-handler
+(deftest issue-timed-request-passes-response-to-handler
   (let [last-handler-string (atom "")
         test-request-invoker (fn [] {:status 200 :body "Bacon123"})
         test-handler (fn [_ body] (reset! last-handler-string body))
         future (issue-timed-request test-request-invoker 0 test-handler)
         _ @future]
-    (is (= @last-handler-string "Bacon123") "Handler receives body content.")))
+    (is (= @last-handler-string {:status 200, :body "Bacon123"}) "Handler receives body content.")))
 
 (deftest load-test-url-returns-expected-keys
   (let [test-request-invoker (fn [] (Thread/sleep 10) {:status 200 :body "Bacon123"})
