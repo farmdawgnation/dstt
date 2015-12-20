@@ -4,7 +4,8 @@
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.java.io :as io]
             [clojure.string :refer [join split]]
-            [clojure.data.json :as json])
+            [clojure.data.json :as json]
+            [com.climate.claypoole :as cp])
   (:gen-class))
 
 ;;; Helper functions.
@@ -47,9 +48,13 @@
   specified amount of time. Then pass the elapsed time and the content of the request through the
   `handler` to get a vector of timing results - where each member of the vector represents one
   category timing."
-  [request-invoker pause handler]
-  (future
-    (Thread/sleep pause)
+  [test-start-time-ns request-invoker pause-ms handler pool]
+  (cp/future
+    pool
+    (let [current-time (System/nanoTime)
+          start-time-difference-ms (int (/ (- current-time test-start-time-ns) 1000000))
+          actual-pause-ms (max 0 (- pause-ms start-time-difference-ms))]
+      (Thread/sleep actual-pause-ms))
     (let [start (System/nanoTime)
           response (request-invoker)
           stop (System/nanoTime)
@@ -67,20 +72,23 @@
   surfaces a bit of timing information in the response, you might query that JSON and generate a
   vector from the information you find there in your handler."
   [request-invoker number-of-requests pause-between-requests handler]
-  (let [request-indicies (range number-of-requests)
-        request-delays (map #(* % pause-between-requests) request-indicies)
-        request-futures (map #(issue-timed-request request-invoker % handler) request-delays)
-        results (doall (map deref (doall request-futures)))
-        grouped-result-categories (partition (count results) (apply interleave results))
-        average-per-category (mapv #(apply-to-numbers % average) grouped-result-categories)
-        min-per-category (mapv #(apply-to-numbers % (fn [x] (apply min x))) grouped-result-categories)
-        max-per-category (mapv #(apply-to-numbers % (fn [x] (apply max x))) grouped-result-categories)
-        stddev-per-category (mapv #(apply-to-numbers % standard-deviation) grouped-result-categories)]
-    {"Averages" average-per-category
-     "Minimums" min-per-category
-     "Maximums" max-per-category
-     "StandardDeviations" stddev-per-category
-     "RawResults" results}))
+  (cp/with-shutdown! [network-pool (cp/threadpool (min 500 number-of-requests))
+                      cpu-pool (cp/threadpool (cp/ncpus))]
+    (let [request-indicies (range number-of-requests)
+          request-delays (map #(* % pause-between-requests) request-indicies)
+          test-start-time-ns (System/nanoTime)
+          request-futures (map #(issue-timed-request test-start-time-ns request-invoker % handler network-pool) request-delays)
+          results (doall (cp/pmap cpu-pool deref (doall request-futures)))
+          grouped-result-categories (partition (count results) (apply interleave results))
+          average-per-category (mapv #(apply-to-numbers % average) grouped-result-categories)
+          min-per-category (mapv #(apply-to-numbers % (fn [x] (apply min x))) grouped-result-categories)
+          max-per-category (mapv #(apply-to-numbers % (fn [x] (apply max x))) grouped-result-categories)
+          stddev-per-category (mapv #(apply-to-numbers % standard-deviation) grouped-result-categories)]
+      {"Averages" average-per-category
+       "Minimums" min-per-category
+       "Maximums" max-per-category
+       "StandardDeviations" stddev-per-category
+       "RawResults" results})))
 
 (defn- select-function-for-http-method
  [http-method]
