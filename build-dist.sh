@@ -19,6 +19,7 @@ chmod ugo+x target/dstt-$VERSION/dstt
 
 echo "Copying over files..."
 cp README.md target/dstt-$VERSION/
+cp LICENSE target/dstt-$VERSION/
 cp $JAR_NAME target/dstt-$VERSION/
 
 echo "Building xz archive..."
