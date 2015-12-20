@@ -54,7 +54,7 @@
           response (request-invoker)
           stop (System/nanoTime)
           elapsed-time-in-ms (int (/ (- stop start) 1000000))]
-      (handler elapsed-time-in-ms (:body response)))))
+      (handler elapsed-time-in-ms response))))
 
 (defn- load-test-url
   "Execute number-of-requests requests using the request-invoker with a pause-between-requests pause between
