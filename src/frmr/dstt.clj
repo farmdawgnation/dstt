@@ -213,7 +213,8 @@
 
             request-options (merge {:headers http-headers}
                                    (some-> http-body parse-body)
-                                   {:follow-redirects false})
+                                   {:follow-redirects false
+                                    :throw-exceptions false})
             request-invoker (build-request-invoker http-method url request-options)
 
             [parsed-handler custom-handler-name] (if-not (nil? handler)
