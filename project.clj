@@ -6,7 +6,8 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [clj-http "2.0.0"]
                  [org.clojure/tools.cli "0.3.3"]
-                 [org.clojure/data.json "0.2.6"]]
+                 [org.clojure/data.json "0.2.6"]
+                 [com.climate/claypoole "1.1.0"]]
   :main frmr.dstt
   :aot [frmr.dstt]
 
