@@ -24,7 +24,7 @@
   (let [last-handler-string (atom "")
         test-request-invoker (fn [] {:status 200 :body "Bacon123"})
         test-handler (fn [_ body] (reset! last-handler-string body))
-        future (issue-timed-request test-request-invoker 0 test-handler)
+        future (issue-timed-request (System/nanoTime) test-request-invoker 0 test-handler :builtin)
         _ @future]
     (is (= @last-handler-string {:status 200, :body "Bacon123"}) "Handler receives body content.")))
 
