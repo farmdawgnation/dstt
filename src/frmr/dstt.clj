@@ -80,15 +80,15 @@
           request-futures (map #(issue-timed-request test-start-time-ns request-invoker % handler network-pool) request-delays)
           results (doall (cp/pmap cpu-pool deref (doall request-futures)))
           grouped-result-categories (partition (count results) (apply interleave results))
-          average-per-category (mapv #(apply-to-numbers % average) grouped-result-categories)
-          min-per-category (mapv #(apply-to-numbers % (fn [x] (apply min x))) grouped-result-categories)
-          max-per-category (mapv #(apply-to-numbers % (fn [x] (apply max x))) grouped-result-categories)
-          stddev-per-category (mapv #(apply-to-numbers % standard-deviation) grouped-result-categories)]
-      {"Averages" average-per-category
-       "Minimums" min-per-category
-       "Maximums" max-per-category
-       "StandardDeviations" stddev-per-category
-       "RawResults" results})))
+          average-per-category (cp/pmap cpu-pool #(apply-to-numbers % average) grouped-result-categories)
+          min-per-category (cp/pmap cpu-pool #(apply-to-numbers % (fn [x] (apply min x))) grouped-result-categories)
+          max-per-category (cp/pmap cpu-pool #(apply-to-numbers % (fn [x] (apply max x))) grouped-result-categories)
+          stddev-per-category (cp/pmap cpu-pool #(apply-to-numbers % standard-deviation) grouped-result-categories)]
+      {"Averages" (vec average-per-category)
+       "Minimums" (vec min-per-category)
+       "Maximums" (vec max-per-category)
+       "StandardDeviations" (vec stddev-per-category)
+       "RawResults" (vec results)})))
 
 (defn- select-function-for-http-method
  [http-method]
