@@ -1,4 +1,4 @@
-(defproject me.frmr.tools/dstt "0.3.0-SNAPSHOT"
+(defproject me.frmr.tools/dstt "0.3.0"
   :description "Damn Simple Test Tool, a simple and rudamentary load testing library."
   :url "https://github.com/farmdawgnation/dstt"
   :license {:name "Apache License 2.0"
