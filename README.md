@@ -17,7 +17,7 @@ Or, if you're interested in using DSTT in your project (say, in an automated tes
 reference to the dependency in your project.clj:
 
 ```clojure
-[me.frmr.tools/dstt "0.2.0"]
+[me.frmr.tools/dstt "0.3.0"]
 ```
 
 ## Introduction
@@ -47,13 +47,14 @@ better job of it). DSTT's real value add is the ability to attach custom **resul
 collect other timing information too.
 
 DSTT is based on the concept of timing categories. Result handlers are Clojure functions that
-take in a result and the total time of the request, and return a vector of the timing categories
-that you're interested in.
+take in the total time of the request and the response from the HTTP server on the other end
+and return a vector of the timing categories that you're interested in. You could pull those numbers
+from timing information reported in a JSON response, timing information in headers, etc, etc.
 
 They look somewhat like:
 
 ```clojure
-(fn [total-time-in-ms response-body]
+(fn [total-time-in-ms response]
   ; Produce a vector of relevant times from this request.
   [total-time-in-ms category-two category-three ...])
 ```
