@@ -10,22 +10,25 @@ echo "Building distribution for $VERSION"
 echo "Building uberjar..."
 lein uberjar
 
-echo "Writing invocation script..."
 mkdir target/dstt-$VERSION
-echo "#!/bin/bash" > target/dstt-$VERSION/dstt
-echo "" >> target/dstt-$VERSION/dstt
-echo "java -jar dstt-$VERSION-standalone.jar \"$@\"" >> target/dstt-$VERSION/dstt
+
+echo "Writing invocation script..."
+sed "s/{VERSION}/$VERSION/" bin/dstt > target/dstt-$VERSION/dstt
 chmod ugo+x target/dstt-$VERSION/dstt
+
+echo "Writing installer script..."
+sed "s/{VERSION}/$VERSION/" bin/install.sh > target/dstt-$VERSION/install.sh
+chmod ugo+x target/dstt-$VERSION/install.sh
 
 echo "Copying over files..."
 cp README.md target/dstt-$VERSION/
 cp LICENSE target/dstt-$VERSION/
 cp $JAR_NAME target/dstt-$VERSION/
 
-echo "Building gzip archive..."
-cd target
-tar czf dstt-$VERSION.tar.gz dstt-$VERSION
-cd ..
-mv target/dstt-$VERSION.tar.gz .
+#echo "Building gzip archive..."
+#cd target
+#tar czf dstt-$VERSION.tar.gz dstt-$VERSION
+#cd ..
+#mv target/dstt-$VERSION.tar.gz .
 
 echo "Distribution built."
