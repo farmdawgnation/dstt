@@ -22,8 +22,10 @@ cp README.md target/dstt-$VERSION/
 cp LICENSE target/dstt-$VERSION/
 cp $JAR_NAME target/dstt-$VERSION/
 
-echo "Building xz archive..."
-tar cJf target/dstt-$VERSION.tar.xz target/dstt-$VERSION
-mv target/dstt-$VERSION.tar.xz .
+echo "Building gzip archive..."
+cd target
+tar czf dstt-$VERSION.tar.gz dstt-$VERSION
+cd ..
+mv target/dstt-$VERSION.tar.gz .
 
 echo "Distribution built."
