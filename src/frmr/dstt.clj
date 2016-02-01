@@ -108,7 +108,7 @@
    :else
    client/get))
 
-(defn- build-request-invoker
+(defn- build-default-request-invoker
   "Builds a request invoker function given the name of the HTTP function you want to invoke, the url
   you want to execute requests against, and a map of options you want to provide to the underlying
   HTTP library."
@@ -121,8 +121,9 @@
 (defn run-load-test
   "Execute a load test against a specified URL by issuing the number-of-requests spread over the
   number-of-milliseconds using the http-method, request-options, and result-handler specified."
-  [url http-method number-of-requests number-of-milliseconds request-options result-handler]
-  (let [request-invoker (build-request-invoker http-method url request-options)
+  [url http-method number-of-requests number-of-milliseconds request-options result-handler custom-request-invoker]
+  (let [request-invoker (or custom-request-invoker
+                            (build-default-request-invoker http-method url request-options))
         pause-between-requests (/ number-of-requests number-of-milliseconds)]
     (load-test-url request-invoker number-of-requests pause-between-requests result-handler)))
 
@@ -170,6 +171,10 @@
     :id :handler
     :default nil]
 
+   [nil "--invoker-builder INVOKERFILE" "Pass in a Clojure file that constructs your request invoker function."
+    :id :invoker-builder
+    :default nil]
+
    ["-h" "--help"]
 
    [nil "--csv FILE" "Spit out a CSV file with raw timings."
@@ -202,6 +207,7 @@
       (let [{requests :requests
              seconds :time
              handler :handler
+             invoker-builder :invoker-builder
              http-method :method
              http-headers :headers
              http-body :body
@@ -215,7 +221,13 @@
                                    (some-> http-body parse-body)
                                    {:follow-redirects false
                                     :throw-exceptions false})
-            request-invoker (build-request-invoker http-method url request-options)
+
+            [request-invoker custom-invoker-name] (if-not (nil? invoker-builder)
+                                                    [(let [build-custom-request-invoker (eval (read (PushbackReader. (io/reader invoker-builder))))]
+                                                       (build-custom-request-invoker http-method url request-options))
+                                                     invoker-builder]
+                                                    [(build-default-request-invoker http-method url request-options)
+                                                     nil])
 
             [parsed-handler custom-handler-name] (if-not (nil? handler)
                                                    [(eval (read (PushbackReader. (io/reader handler))))
@@ -226,6 +238,7 @@
         (println (str requests " requests spread over " seconds " seconds."))
         (if verbose (println (str "Request options: " request-options)))
         (if custom-handler-name (println (str "Using custom handler: " custom-handler-name)))
+        (if custom-invoker-name (println (str "Using custom request invoker: " custom-invoker-name)))
         (println "")
         (let [load-test-results (load-test-url request-invoker
                                                requests
